@@ -1,6 +1,6 @@
 .PHONY : test, build
 test:
-	g++ main.cpp -o test.out
+	g++ main.cpp grammar_reader.cpp common/string_utils.cpp -o test.out
 	./test
 build:
-	g++ main.cpp -o gen.out
+	g++ main.cpp grammar_reader.cpp common/string_utils.cpp -o gen.out
