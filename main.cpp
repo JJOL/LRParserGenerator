@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <regex>
 #include <vector>
@@ -55,6 +56,12 @@ public:
 
 int main(int argc, char **argv)
 {
+    String grammarName = "gr";
+    if (argc > 1) {
+        grammarName = String(argv[1]);
+    }
+
+
     // 1. Leer Reglas de Gramatica
     GrammarReader reader;
     Grammar grammar = reader.readRulesFromConsole();
@@ -128,8 +135,9 @@ int main(int argc, char **argv)
     // 3. Generar Tabla
     
     
-
     String tableOut;
+
+    String lrClosureTableHTML;
     std::cout << "LR CLOSURE TABLE" << std::endl;
     {
         String tableHead = 
@@ -187,10 +195,11 @@ int main(int argc, char **argv)
 
         tableOut += tableFoot;
     }
-    std::cout << tableOut << std::endl;
+    lrClosureTableHTML = tableOut;
+    std::cout << lrClosureTableHTML << std::endl;
 
 
-
+    String lrTableHTML;
     std::cout << "LR TABLE" << std::endl;
     {
         int nlits = extGrammar.literals.size(),
@@ -200,7 +209,7 @@ int main(int argc, char **argv)
         String tableHead = 
         String("<table>")
         + "<thead>"
-        + "<tr><th colspan=\""+std::to_string(nsymbs)+"\">LR table</th></tr>"
+        + "<tr><th colspan=\""+std::to_string(nsymbs+1)+"\">LR table</th></tr>"
         + "<tr>"
         + "<th rowspan=\"2\">State</th><th colspan=\""+std::to_string(nlits)+"\">ACTION</th><th colspan=\""+std::to_string(nvars)+"\">GOTO</th>"
         + "</tr>";
@@ -219,7 +228,7 @@ int main(int argc, char **argv)
             int stateIntex = stateEntry.first;
             GrammarState* state = stateEntry.second;
 
-            content = "<tr><td>"+std::to_string(stateEntry.first)+"</td>";
+            content = "<tr><td class=\"td-state\">"+std::to_string(stateEntry.first)+"</td>";
 
             std::map<String, String> literalEntries;
 
@@ -268,10 +277,26 @@ int main(int argc, char **argv)
 
         tableOut += "</tbody></table>";
     }
-    std::cout << tableOut << std::endl;
+    lrTableHTML = tableOut;
+    std::cout << lrTableHTML << std::endl;
 
 
     // 4. Imprimir HTML
+    std::ofstream outHtmlFile;
+    outHtmlFile.open(grammarName+"_out.html");
+
+    outHtmlFile << "<!DOCTYPE html><html><head>";
+    outHtmlFile << "<style>table, th, td { border: 1px solid black; } .td-state { color: blue; } .kpr-completed { color: green; }</style>";
+    outHtmlFile << "<title>" << grammarName << "</title></head><body>";
+
+    outHtmlFile << lrClosureTableHTML << "<br>";
+    outHtmlFile << lrTableHTML;
+
+    outHtmlFile << "</body></html>";
+
+
+    outHtmlFile.close();
+
 
     return 0;
 }
