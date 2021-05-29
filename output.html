@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        table, th, td {
+            border: 1px solid black;
+        }
+
+        .td-state {
+            color: blue;
+        }
+
+        .kpr-completed {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+  
+<!-- <table>
+    <thead>
+        <tr>
+            <th colspan="4">SLR closure table</th>
+        </tr>
+        <tr>
+            <th>Goto</th>
+            <th>Kernel</th>
+            <th>State</th>
+            <th>Closure</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td></td>
+            <td>{Goal' -> .Goal}</td>
+            <td class="td-state">0</td>
+            <td>{Goal' -> .Goal; Goal -> .A; A -> .( A )}</td>
+        </tr>
+        <tr>
+            <td>goto(0, Goal)</td>
+            <td>{ <span class="kpr-completed">Goal' -> Goal.</span> }</td>
+            <td class="td-state">1</td>
+            <td>{<span class="kpr-completed">Goal' -> Goal.</span>}</td>
+        </tr>
+    </tbody>
+</table>   -->
+
+<table><thead><tr><th colspan="4">SLR closure table</th></tr><tr><th>Goto</th><th>Kernel</th><th>State</th><th>Closure</th></tr></thead><tbody><tr><td></td><td>{<span>E' ->  .E;</span>}</td><td class="td-state">0</td><td></td></tr><tr><td>goto(0,()</td><td>{<span>F ->  ( .E );</span>}</td><td class="td-state">1</td><td>{<span>F ->  ( .E )</span><span>E ->  .E + T</span><span>E ->  .T</span><span>T ->  .T * F</span><span>T ->  .F</span><span>F ->  .id</span><span>F ->  .( E )</span>}</td></tr><tr><td>goto(0,E)</td><td>{<span>E ->  E .+ T;</span><span style="color: green">E' ->  E.;</span>}</td><td class="td-state">2</td><td>{<span>E ->  E .+ T</span><span style="color: green">E' ->  E.</span>}</td></tr><tr><td>goto(0,F)</td><td>{<span style="color: green">T ->  F.;</span>}</td><td class="td-state">3</td><td>{<span style="color: green">T ->  F.</span>}</td></tr><tr><td>goto(0,T)</td><td>{<span>T ->  T .* F;</span><span style="color: green">E ->  T.;</span>}</td><td class="td-state">4</td><td>{<span>T ->  T .* F</span><span style="color: green">E ->  T.</span>}</td></tr><tr><td>goto(0,id)</td><td>{<span style="color: green">F ->  id.;</span>}</td><td class="td-state">5</td><td>{<span style="color: green">F ->  id.</span>}</td></tr><tr><td>goto(1,()</td><td>{<span>F ->  ( .E );</span>}</td><td class="td-state">1</td><td></td></tr><tr><td>goto(1,E)</td><td>{<span>E ->  E .+ T;</span><span>F ->  ( E .);</span>}</td><td class="td-state">6</td><td>{<span>E ->  E .+ T</span><span>F ->  ( E .)</span>}</td></tr><tr><td>goto(1,F)</td><td>{<span style="color: green">T ->  F.;</span>}</td><td class="td-state">3</td><td></td></tr><tr><td>goto(1,T)</td><td>{<span>T ->  T .* F;</span><span style="color: green">E ->  T.;</span>}</td><td class="td-state">4</td><td></td></tr><tr><td>goto(1,id)</td><td>{<span style="color: green">F ->  id.;</span>}</td><td class="td-state">5</td><td></td></tr><tr><td>goto(2,+)</td><td>{<span>E ->  E + .T;</span>}</td><td class="td-state">7</td><td>{<span>E ->  E + .T</span><span>T ->  .T * F</span><span>T ->  .F</span><span>F ->  .id</span><span>F ->  .( E )</span>}</td></tr><tr><td>goto(4,*)</td><td>{<span>T ->  T * .F;</span>}</td><td class="td-state">8</td><td>{<span>T ->  T * .F</span><span>F ->  .id</span><span>F ->  .( E )</span>}</td></tr><tr><td>goto(6,))</td><td>{<span style="color: green">F ->  ( E ).;</span>}</td><td class="td-state">9</td><td>{<span style="color: green">F ->  ( E ).</span>}</td></tr><tr><td>goto(6,+)</td><td>{<span>E ->  E + .T;</span>}</td><td class="td-state">7</td><td></td></tr><tr><td>goto(7,()</td><td>{<span>F ->  ( .E );</span>}</td><td class="td-state">1</td><td></td></tr><tr><td>goto(7,F)</td><td>{<span style="color: green">T ->  F.;</span>}</td><td class="td-state">3</td><td></td></tr><tr><td>goto(7,T)</td><td>{<span>T ->  T .* F;</span><span style="color: green">E ->  E + T.;</span>}</td><td class="td-state">10</td><td>{<span>T ->  T .* F</span><span style="color: green">E ->  E + T.</span>}</td></tr><tr><td>goto(7,id)</td><td>{<span style="color: green">F ->  id.;</span>}</td><td class="td-state">5</td><td></td></tr><tr><td>goto(8,()</td><td>{<span>F ->  ( .E );</span>}</td><td class="td-state">1</td><td></td></tr><tr><td>goto(8,F)</td><td>{<span style="color: green">T ->  T * F.;</span>}</td><td class="td-state">11</td><td>{<span style="color: green">T ->  T * F.</span>}</td></tr><tr><td>goto(8,id)</td><td>{<span style="color: green">F ->  id.;</span>}</td><td class="td-state">5</td><td></td></tr><tr><td>goto(10,*)</td><td>{<span>T ->  T * .F;</span>}</td><td class="td-state">8</td><td></td></tr></tbody></table>
+<table><thead><tr><th colspan="10">LR table</th></tr><tr><th rowspan="2">State</th><th colspan="6">ACTION</th><th colspan="4">GOTO</th></tr><tr><td>$</td><td>(</td><td>)</td><td>*</td><td>+</td><td>id</td><td>E'</td><td>E</td><td>T</td><td>F</td></tr></thead><tbody><tr><td>0</td><td></td><td>S1</td><td></td><td></td><td></td><td>S5</td><td></td><td>2</td><td>4</td><td>3</td><tr><td>1</td><td></td><td>S1</td><td></td><td></td><td></td><td>S5</td><td></td><td>6</td><td>4</td><td>3</td><tr><td>2</td><td>acc</td><td></td><td></td><td></td><td>S7</td><td></td><td></td><td></td><td></td><td></td><tr><td>3</td><td>R3</td><td></td><td>R3</td><td>R3</td><td>R3</td><td></td><td></td><td></td><td></td><td></td><tr><td>4</td><td>R1</td><td></td><td>R1</td><td>S8</td><td>R1</td><td></td><td></td><td></td><td></td><td></td><tr><td>5</td><td>R4</td><td></td><td>R4</td><td>R4</td><td>R4</td><td></td><td></td><td></td><td></td><td></td><tr><td>6</td><td></td><td></td><td>S9</td><td></td><td>S7</td><td></td><td></td><td></td><td></td><td></td><tr><td>7</td><td></td><td>S1</td><td></td><td></td><td></td><td>S5</td><td></td><td></td><td>10</td><td>3</td><tr><td>8</td><td></td><td>S1</td><td></td><td></td><td></td><td>S5</td><td></td><td></td><td></td><td>11</td><tr><td>9</td><td>R5</td><td></td><td>R5</td><td>R5</td><td>R5</td><td></td><td></td><td></td><td></td><td></td><tr><td>10</td><td>R0</td><td></td><td>R0</td><td>S8</td><td>R0</td><td></td><td></td><td></td><td></td><td></td><tr><td>11</td><td>R2</td><td></td><td>R2</td><td>R2</td><td>R2</td><td></td><td></td><td></td><td></td><td></td></tbody></table>
+<table><thead><tr><th colspan="4">SLR closure table</th></tr><tr><th>Goto</th><th>Kernel</th><th>State</th><th>Closure</th></tr></thead><tbody><tr><td></td><td>{<span>Goal' ->  .Goal;</span>}</td><td class="td-state">0</td><td></td></tr><tr><td>goto(0,()</td><td>{<span>A ->  ( .A );</span>}</td><td class="td-state">1</td><td>{<span>A ->  ( .A )</span><span>A ->  .( A )</span><span>A ->  .Two</span><span>Two ->  .a</span><span>Two ->  .b</span>}</td></tr><tr><td>goto(0,A)</td><td>{<span style="color: green">Goal ->  A.;</span>}</td><td class="td-state">2</td><td>{<span style="color: green">Goal ->  A.</span>}</td></tr><tr><td>goto(0,Goal)</td><td>{<span style="color: green">Goal' ->  Goal.;</span>}</td><td class="td-state">3</td><td>{<span style="color: green">Goal' ->  Goal.</span>}</td></tr><tr><td>goto(0,Two)</td><td>{<span style="color: green">A ->  Two.;</span>}</td><td class="td-state">4</td><td>{<span style="color: green">A ->  Two.</span>}</td></tr><tr><td>goto(0,a)</td><td>{<span style="color: green">Two ->  a.;</span>}</td><td class="td-state">5</td><td>{<span style="color: green">Two ->  a.</span>}</td></tr><tr><td>goto(0,b)</td><td>{<span style="color: green">Two ->  b.;</span>}</td><td class="td-state">6</td><td>{<span style="color: green">Two ->  b.</span>}</td></tr><tr><td>goto(1,()</td><td>{<span>A ->  ( .A );</span>}</td><td class="td-state">1</td><td></td></tr><tr><td>goto(1,A)</td><td>{<span>A ->  ( A .);</span>}</td><td class="td-state">7</td><td>{<span>A ->  ( A .)</span>}</td></tr><tr><td>goto(1,Two)</td><td>{<span style="color: green">A ->  Two.;</span>}</td><td class="td-state">4</td><td></td></tr><tr><td>goto(1,a)</td><td>{<span style="color: green">Two ->  a.;</span>}</td><td class="td-state">5</td><td></td></tr><tr><td>goto(1,b)</td><td>{<span style="color: green">Two ->  b.;</span>}</td><td class="td-state">6</td><td></td></tr><tr><td>goto(7,))</td><td>{<span style="color: green">A ->  ( A ).;</span>}</td><td class="td-state">8</td><td>{<span style="color: green">A ->  ( A ).</span>}</td></tr></tbody></table>
+
+<table><thead><tr><th colspan="9">LR table</th></tr><tr><th rowspan="2">State</th><th colspan="5">ACTION</th><th colspan="4">GOTO</th></tr><tr><td>$</td><td>(</td><td>)</td><td>a</td><td>b</td><td>Goal'</td><td>Goal</td><td>A</td><td>Two</td></tr></thead><tbody><tr><td>0</td><td></td><td>S1</td><td></td><td>S5</td><td>S6</td><td></td><td>3</td><td>2</td><td>4</td><tr><td>1</td><td></td><td>S1</td><td></td><td>S5</td><td>S6</td><td></td><td></td><td>7</td><td>4</td><tr><td>2</td><td>R0</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><tr><td>3</td><td>acc</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><tr><td>4</td><td>R2</td><td></td><td>R2</td><td></td><td></td><td></td><td></td><td></td><td></td><tr><td>5</td><td>R3</td><td></td><td>R3</td><td></td><td></td><td></td><td></td><td></td><td></td><tr><td>6</td><td>R4</td><td></td><td>R4</td><td></td><td></td><td></td><td></td><td></td><td></td><tr><td>7</td><td></td><td></td><td>S8</td><td></td><td></td><td></td><td></td><td></td><td></td><tr><td>8</td><td>R1</td><td></td><td>R1</td><td></td><td></td><td></td><td></td><td></td><td></td></tbody></table>
+</body>
+</html>
