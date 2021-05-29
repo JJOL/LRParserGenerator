@@ -1,2 +1,3 @@
 # SLR Table Gen
-Un programa generador de tablas de procesamiento para lenguajes LR(0) o SLR
+
+Descripcion: Herramienta que genera en HTML tablas de Parseo LR(0) dado un conjunto de reglas gramaticales.
