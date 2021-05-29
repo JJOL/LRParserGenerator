@@ -1,4 +1,4 @@
-S->( A )
-A->B A
-B->b
-B->eps
+S -> ( A )
+A -> B A
+B -> b
+B -> eps

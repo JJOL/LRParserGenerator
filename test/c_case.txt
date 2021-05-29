@@ -1,5 +1,5 @@
-Goal->A
-A->( A )
-A->Two
-Two->a
-Two->b
+Goal -> A
+A -> ( A )
+A -> Two
+Two -> a
+Two -> b

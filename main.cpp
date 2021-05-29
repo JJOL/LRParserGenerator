@@ -1,3 +1,9 @@
+/**
+ * Author: Juan Jose Olivera
+ * Fecha: 29 de Mayo del 2021
+ * Programa: Generador de Tablas de Parseo LR(0) para gramaticas sin epsilon.
+ * Descripcion: Herramienta que genera en HTML tablas de Parseo LR(0) dado un conjunto de reglas gramaticales.
+*/
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -7,8 +13,8 @@
 #include <set>
 #include "common/string_utils.h"
 #include "common/grammars.h"
-#include "GrammarReader.h"
-#include "ParsingGenerator.h"
+#include "core/GrammarReader.h"
+#include "core/ParsingGenerator.h"
 
 using String = std::string;
 
@@ -23,9 +29,9 @@ public:
         std::string str = "{";
         for (RuleProgress pr : state->kernelRules) {
             if (pr.completed())
-                str += "<span style=\"color: green\">" + pr.toString() + ";</span>";
+                str += "<span style=\"color: green\">" + pr.toString() + "; </span>";
             else
-                str += "<span>" + pr.toString() + ";</span>";
+                str += "<span>" + pr.toString() + "; </span>";
         }
 
         str += "}";
@@ -39,9 +45,9 @@ public:
         std::string str = "{";
         for (RuleProgress pr : state->closureRules) {
             if (pr.completed())
-                str += "<span style=\"color: green\">" + pr.toString() + "</span>";
+                str += "<span style=\"color: green\">" + pr.toString() + "; </span>";
             else
-                str += "<span>" + pr.toString() + "</span>";
+                str += "<span>" + pr.toString() + "; </span>";
         }
 
         str += "}";
