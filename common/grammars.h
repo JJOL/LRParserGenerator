@@ -65,6 +65,7 @@ public:
     std::map<std::string, GrammarState*> actionStateMap;
 public:
     GrammarState() {}
+    GrammarState(int _state): state(_state) {}
     GrammarState(int _state, const KernelsSet& _kernelsSet, const Grammar& g);
     GrammarState(int _state, const KernelsSet& _kernelsSet, GrammarState* _from, std::string _fromAction, const Grammar& g);
     
@@ -80,5 +81,14 @@ private:
     void extractActionSymbols();
 };
 
+class Parser
+{
+public:
+    Grammar grammar;
+    std::map<int, GrammarState*> stateMap;
+    GrammarState *root;
+    Parser(Grammar _grammar, std::map<int, GrammarState*> _stateMap): grammar(_grammar), stateMap(_stateMap) {}
+    ~Parser();
+};
 
 #endif

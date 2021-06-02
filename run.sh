@@ -7,6 +7,7 @@ g++ main.cpp core/GrammarReader.cpp core/ParsingGenerator.cpp common/string_util
 if [ -z "$1" ]
 then
     echo "./run.sh <archivo-de-gramatica> [nombre-de-gramatica]"
+    echo "Ej: ./run.sh test/arith.txt Arithmetic"
 else
     cat $1 | ./gen.out $2
 fi

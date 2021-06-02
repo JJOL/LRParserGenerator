@@ -5,6 +5,31 @@
 #include <string>
 #include <iostream>
 
+std::map<int, GrammarState*> groupIntoTable(GrammarState *root)
+{
+    // Generar una tabla de estados indexada por identificador de estado
+    std::map<int, GrammarState*> stateMap;
+    std::list<GrammarState*> toVisit;
+    std::set<GrammarState*> visited;
+    toVisit.push_back(root);
+    while (!toVisit.empty()) {
+        GrammarState* state = toVisit.front();
+        toVisit.pop_front();
+        auto it = visited.find(state);
+        if (it != visited.end())
+            continue;
+        else
+            visited.insert(state);
+
+        for (auto vk : state->actionStateMap) {
+            toVisit.push_back(vk.second);
+        }
+
+        stateMap[state->getState()] = state;
+    }
+
+    return stateMap;
+}
 
 void printKernelSet(const KernelsSet& kernel)
 {
@@ -52,7 +77,7 @@ GrammarState* myKernelMapFind(
     return nullptr;
 }
 
-GrammarState* ParsingGenerator::generate(Grammar g)
+Parser* ParsingGenerator::generate(Grammar g)
 {
     std::set<GrammarState*> visited;
     std::list<GrammarState*> toVisit;
@@ -120,5 +145,10 @@ GrammarState* ParsingGenerator::generate(Grammar g)
             state->actionStateMap[a] = nextState;
         }
     }
-    return state0;
+
+
+
+    Parser* parser = new Parser(g, groupIntoTable(state0));
+    parser->root = state0;
+    return parser;
 }

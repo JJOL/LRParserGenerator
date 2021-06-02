@@ -5,6 +5,6 @@
 class ParsingGenerator
 {
 public:
-    GrammarState* generate(Grammar g);
+    Parser* generate(Grammar g);
 };
 #endif

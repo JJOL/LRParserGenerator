@@ -266,3 +266,11 @@ std::vector<RuleProgress> GrammarState::getCompletedRules() const
 
     return completedRules;
 }
+
+
+Parser::~Parser()
+{
+    for (auto entry : stateMap) {
+        delete entry.second;
+    }
+}
