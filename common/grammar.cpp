@@ -4,14 +4,11 @@
 #include <set>
 #include <iostream>
 
-using namespace std;
-using String = std::string;
-
-bool isVariable(const std::string& symbol)
+bool isVariable(const String& symbol)
 {
     return symbol[0] >= 'A' && symbol[0] <= 'Z';
 }
-bool isLiteral(const std::string& symbol)
+bool isLiteral(const String& symbol)
 {
     return !isVariable(symbol);
 }
@@ -21,34 +18,32 @@ Grammar Grammar::extended()
     Grammar extendedG;
 
     // Define Extended Rule
-    string startSymb = variables[0];
-    string extStartSymb = startSymb + "'";
+    String extStartSymb = headVariable + "'";
     extendedG.headVariable = extStartSymb;
 
     GrammarRule extRule;
     extRule.head = extStartSymb;
-    extRule.body.push_back(startSymb);
+    extRule.body.push_back(headVariable);
 
     // Add Extended Rule as first rule of extended grammar
     extendedG.variables.reserve(variables.size()+1);
     extendedG.variables.push_back(extStartSymb);
-    extendedG.variableRulesMap[extStartSymb] = vector<GrammarRule>();
+    extendedG.variableRulesMap[extStartSymb] = std::vector<GrammarRule>();
     extendedG.variableRulesMap[extStartSymb].push_back(extRule);
     extendedG.rules.reserve(rules.size()+1);
     extendedG.rules.push_back(extRule);
 
-    // Copy original grammar
-    vector<string>::iterator s_it;
-    for (s_it = variables.begin(); s_it < variables.end(); s_it++) {
-        extendedG.variables.push_back(*s_it);
-        extendedG.variableRulesMap[*s_it] = variableRulesMap[*s_it];
+    // Copy original grammar | Dont extendedG.variables = variables, because we have added to front an extra one
+    std::vector<String>::iterator s_it;
+    for (String var : variables) {
+        extendedG.variables.push_back(var);
+        extendedG.variableRulesMap[var] = variableRulesMap[var];
     }
     for (GrammarRule r : rules)
         extendedG.rules.push_back(r);
 
     extendedG.literals = literals;
     extendedG.literals.insert("$");
-    extendedG.varFollowsMap = varFollowsMap;
 
     return extendedG;
 }
@@ -64,29 +59,27 @@ void Grammar::generateFirsts()
     bool hasAdded;
     do {
         hasAdded = false;
-        for (auto var : variables) {
-            for (auto rule : rules) {
-                if (rule.head == var) {
-                    auto it = varFirstsMap.find(var);
-                    if (it == varFirstsMap.end()) {
-                        varFirstsMap[var] = std::set<String>();
-                        hasAdded = true;
-                    }
-                    String firstBodySymb = rule.body[0];
-                    
-                    // Rule 2. of FIRSTS ALGORITHM
-                    std::set<String> toAdd;
-                    if (isVariable(firstBodySymb)) {
-                        toAdd = varFirstsMap[firstBodySymb];
-                    } else {
-                        toAdd.insert(firstBodySymb);
-                    }
+        for (String var : variables) {
+            for (GrammarRule rule : variableRulesMap[var]) {
+                auto indexIt = varFirstsMap.find(var);
+                if (indexIt == varFirstsMap.end()) {
+                    varFirstsMap[var] = std::set<String>();
+                    hasAdded = true;
+                }
+                String firstBodySymb = rule.body[0];
+                
+                // Rule 2. of FIRSTS ALGORITHM
+                std::set<String> toAdd;
+                if (isVariable(firstBodySymb)) {
+                    toAdd = varFirstsMap[firstBodySymb];
+                } else {
+                    toAdd.insert(firstBodySymb);
+                }
 
-                    for (auto newLit : toAdd) {
-                        if (varFirstsMap[var].find(newLit) == varFirstsMap[var].end()) {
-                            varFirstsMap[var].insert(newLit);
-                            hasAdded = true;
-                        }
+                for (String newLit : toAdd) {
+                    if (varFirstsMap[var].find(newLit) == varFirstsMap[var].end()) {
+                        varFirstsMap[var].insert(newLit);
+                        hasAdded = true;
                     }
                 }
             }
@@ -107,27 +100,27 @@ void Grammar::generateFollows()
     bool hasAdded;
     do {
         hasAdded = false;
-        for (auto var : variables) {
-            for (auto rule : rules) {
+        for (String var : variables) {
+            for (GrammarRule rule : rules) {
                 for (int i = 0; i < rule.body.size(); i++) {
                     if (rule.body[i] == var) {
-                        auto it = varFollowsMap.find(var);
-                        if (it == varFollowsMap.end()) {
+                        auto indexIt = varFollowsMap.find(var);
+                        if (indexIt == varFollowsMap.end()) {
                             varFollowsMap[var] = std::set<String>();
                             hasAdded = true;
                         }
 
                         std::set<String> toAdd;
-                        // Rule 2. of FOLLOWS ALGORITHM
+                        // Rule 2. of FOLLOWS ALGORITHM (Follows are Firsts of the next variable in production)
                         if (i < rule.body.size()-1) {
                             toAdd = varFirstsMap[rule.body[i+1]];
                         }
-                        // Rule 3. of FOLLOWS ALGORITHM
+                        // Rule 3. of FOLLOWS ALGORITHM (Follows are Follows of the head variable of production)
                         else {
                             toAdd = varFollowsMap[rule.head];
                         }
 
-                        for (auto newLit : toAdd) {
+                        for (String newLit : toAdd) {
                             if (varFollowsMap[var].find(newLit) == varFollowsMap[var].end()) {
                                 varFollowsMap[var].insert(newLit);
                                 hasAdded = true;
@@ -158,9 +151,9 @@ RuleProgress operator++(const RuleProgress& r)
     return newRule;
 }
 
-std::string RuleProgress::toString() const
+String RuleProgress::toString() const
 {
-    std::string s = rule.head + " -> ";
+    String s = rule.head + " -> ";
     for (int i = 0; i < rule.body.size(); i++) {
         if (i == pos)
             s += " ." + rule.body[i];
@@ -192,7 +185,7 @@ GrammarState::GrammarState(int _state, const KernelsSet& _kernel, const Grammar&
     state = _state;
     from = nullptr;
     // Save Kernels In our Memory
-    saveKRP(_kernel);
+    copyKernelRules(_kernel);
     // Expand Closure
     generateClosure(g);
     // Get Possible Actions
@@ -202,20 +195,20 @@ GrammarState::GrammarState(int _state, const KernelsSet& _kernel, const Grammar&
     }
 }
 
-GrammarState::GrammarState(int _state, const KernelsSet& _kernel, GrammarState* _from, std::string _fromAction, const Grammar& g) 
+GrammarState::GrammarState(int _state, const KernelsSet& _kernel, GrammarState* _from, String _fromAction, const Grammar& g) 
 : GrammarState(_state, _kernel, g)
 {
     from = _from;
     fromAction = _fromAction;
 }
 
-KernelsSet GrammarState::move(std::string actionSymb)
+KernelsSet GrammarState::move(String actionSymb)
 {
-    cout << "Moving S(" << state << "), " << actionSymb << endl;
+    std::cout << "Moving S(" << state << "), " << actionSymb << std::endl;
     KernelsSet newKernelRules;
     for (auto pRule : closureRules) {
         if (pRule.nextSymbol == actionSymb && !pRule.completed()) {
-            cout << "Applying Rule: " << pRule.toString() << endl;
+            std::cout << "Applying Rule: " << pRule.toString() << std::endl;
             newKernelRules.insert(++pRule);
         }
     }
@@ -223,7 +216,7 @@ KernelsSet GrammarState::move(std::string actionSymb)
     return newKernelRules;
 }
 
-void GrammarState::saveKRP(const KernelsSet& _kernel)
+void GrammarState::copyKernelRules(const KernelsSet& _kernel)
 {
     for (auto pRule : _kernel) {
         kernelRules.push_back(pRule);
@@ -234,7 +227,7 @@ void GrammarState::saveKRP(const KernelsSet& _kernel)
 void GrammarState::generateClosure(const Grammar& g)
 {
     // cout << "Expanding S(" << state << ") closure..." << endl;
-    std::set<std::string> checkedVars;
+    std::set<String> checkedVars;
     for (int i = 0; i < closureRules.size(); i++) {
         RuleProgress& pRule = closureRules[i];
         // cout << "Checking symbol: " << pRule.nextSymbol << endl;

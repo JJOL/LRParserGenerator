@@ -8,11 +8,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <regex>
 #include <vector>
-#include <list>
-#include <set>
-#include "common/string_utils.h"
 #include "common/grammars.h"
 #include "core/GrammarReader.h"
 #include "core/ParsingGenerator.h"
@@ -34,8 +30,8 @@ int main(int argc, char **argv)
     Grammar extGrammar = grammar.extended();
     extGrammar.generateFollows();
 
-    // Imprimir First y Follow para debuggear
     #ifdef _DEBUG
+    // Imprimir First y Follow para debuggear
     std::cout << "FIRSTS(X):" << std::endl;
     for (auto kv : extGrammar.varFirstsMap) {
         std::cout << "FIRST(" << kv.first << ") = { ";
@@ -57,21 +53,16 @@ int main(int argc, char **argv)
 
     // Print Read Rules
     std::vector<String>::iterator s_it;
-    for (s_it = extGrammar.variables.begin(); s_it < extGrammar.variables.end(); s_it++) {
-        std::cout << "Rules for '" << *s_it << "':" << std::endl;
-
-        rules_map_t::iterator rs_it = extGrammar.variableRulesMap.find(*s_it);
-        std::vector<GrammarRule> rules = rs_it->second;
-
+    for (String variable : extGrammar.variables) {
+        std::cout << "Rules for '" << variable << "':" << std::endl;
+        std::vector<GrammarRule> rules = extGrammar.variableRulesMap[variable];
         // Print each Rule
         std::vector<GrammarRule>::iterator r_ptr;
-        for (r_ptr = rules.begin(); r_ptr < rules.end(); r_ptr++) {
-            GrammarRule r = *r_ptr;
-            std::cout << "Head: " << r.head << std::endl;
-            std::cout << "Body: " << std::endl;
-            std::vector<String>::iterator b_itr;
-            for (b_itr = r.body.begin(); b_itr < r.body.end(); b_itr++) {
-                std::cout << "- " << *b_itr << std::endl;
+        for (GrammarRule rule : rules) {
+            std::cout << "Head: " << rule.head << std::endl;
+            std::cout << "Body: " << std::endl;  
+            for (String symbol : rule.body) {
+                std::cout << "- " << symbol << std::endl;
             }
         }
     }

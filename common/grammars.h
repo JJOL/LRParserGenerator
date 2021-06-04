@@ -6,46 +6,47 @@
 #include <map>
 #include <set>
 
-using StringVector = std::vector<std::string>;
+using String = std::string;
+using StringVector = std::vector<String>;
 
 class GrammarRule
 {
 public:
     int id;
-    std::string head;
-    std::vector<std::string> body;
+    String head;
+    std::vector<String> body;
 };
 
-using rules_map_t = std::map<std::string, std::vector<GrammarRule>>;
+using GrammarRulesMap = std::map<String, std::vector<GrammarRule>>;
 
 class Grammar
 {
 public:
-    std::set<std::string> literals;
-    std::vector<std::string> variables;
-    rules_map_t variableRulesMap;
+    std::set<String> literals;
+    std::vector<String> variables;
     std::vector<GrammarRule> rules;
-    std::map<std::string,std::set<std::string>> varFollowsMap;
-    std::map<std::string,std::set<std::string>> varFirstsMap;
-    std::string headVariable;
+    GrammarRulesMap variableRulesMap;
+    std::map<String,std::set<String>> varFollowsMap;
+    std::map<String,std::set<String>> varFirstsMap;
+    String headVariable;
 public:
     Grammar extended();
     void generateFollows();
     void generateFirsts();
 };
 
-bool isVariable(const std::string& symbol);
-bool isLiteral(const std::string& symbol);
+bool isVariable(const String& symbol);
+bool isLiteral(const String& symbol);
 
 class RuleProgress {
 public:
     GrammarRule rule;
     int pos;
-    std::string nextSymbol;
+    String nextSymbol;
 public:
     RuleProgress(const GrammarRule& _rule);
     bool completed() const;
-    std::string toString() const;
+    String toString() const;
     friend bool operator<(const RuleProgress& r1, const RuleProgress& r2);
     friend RuleProgress operator++(const RuleProgress& r);
 };
@@ -58,30 +59,30 @@ private:
     int state;
 public:
     GrammarState* from;
-    std::string fromAction;
+    String fromAction;
     std::vector<RuleProgress> kernelRules;
     std::vector<RuleProgress> closureRules;
-    std::set<std::string> actions;
-    std::map<std::string, GrammarState*> actionStateMap;
+    std::set<String> actions;
+    std::map<String, GrammarState*> actionStateMap;
 public:
     GrammarState() {}
     GrammarState(int _state): state(_state) {}
     GrammarState(int _state, const KernelsSet& _kernelsSet, const Grammar& g);
-    GrammarState(int _state, const KernelsSet& _kernelsSet, GrammarState* _from, std::string _fromAction, const Grammar& g);
+    GrammarState(int _state, const KernelsSet& _kernelsSet, GrammarState* _from, String _fromAction, const Grammar& g);
     
-    KernelsSet move(std::string actionSymb);
+    KernelsSet move(String actionSymb);
     
     int getState() const;
 
     std::vector<RuleProgress> getCompletedRules() const;
 
 private:
-    void saveKRP(const KernelsSet& _kernel);
+    void copyKernelRules(const KernelsSet& _kernel);
     void generateClosure(const Grammar& g);
     void extractActionSymbols();
 };
 
-class Parser
+struct Parser
 {
 public:
     Grammar grammar;

@@ -2,12 +2,11 @@
 #include <string>
 #include <vector>
 #include <regex>
+using String = std::string;
 
-using namespace std;
-
-vector<string> split(string s, string delimiter)
+std::vector<String> split(String s, String delimiter)
 {
-    vector<string> splits;
+    std::vector<String> splits;
     int delLen = delimiter.length();
     int split_on = -1;
 
@@ -23,10 +22,10 @@ vector<string> split(string s, string delimiter)
     return splits;
 }
 
-vector<string> split(string s, regex r)
+std::vector<String> split(String s, std::regex r)
 {
-  vector<string> splits;
-  smatch m;
+  std::vector<String> splits;
+  std::smatch m;
 
   while (regex_search(s, m, r))
   {

@@ -44,68 +44,63 @@ String StatePrinter::getGotoString(GrammarState* fromState, const std::string& s
 
 String HTMLRenderer::getLRClosureTable(Parser* parser) const
 {
-    String tableOut;
-
     String lrClosureTableHTML;
     std::cout << "LR CLOSURE TABLE" << std::endl;
-    {
-        String tableHead = 
-        "<table>"
-        "<thead>"
-        "<tr><th colspan=\"4\">SLR closure table</th></tr>"
-        "<tr>"
-        "<th>Goto</th><th>Kernel</th><th>State</th><th>Closure</th>"
-        "</tr>"
-        "</thead>"
-        "<tbody>";
-        String tableFoot = 
-        "</tbody>"
-        "</table>";
-        tableOut = tableHead;
-        
-        String content;
-        std::list<GrammarState*> toVisit;
-        std::set<GrammarState*> visited;
-        GrammarState* root = parser->root;
-        toVisit.push_back(root);
+    String tableHead = 
+    "<table>"
+    "<thead>"
+    "<tr><th colspan=\"4\">SLR closure table</th></tr>"
+    "<tr>"
+    "<th>Goto</th><th>Kernel</th><th>State</th><th>Closure</th>"
+    "</tr>"
+    "</thead>"
+    "<tbody>";
+    String tableFoot = 
+    "</tbody>"
+    "</table>";
+    lrClosureTableHTML = tableHead;
+    
+    String content;
+    std::list<GrammarState*> toVisit;
+    std::set<GrammarState*> visited;
+    GrammarState* root = parser->root;
+    toVisit.push_back(root);
 
-        StatePrinter sprinter(root);
-        content = String("<tr><td>")
-            + "</td><td>"
-            + sprinter.getKernelString() + "</td><td class=\"td-state\">"
-            + std::to_string(root->getState()) + "</td><td>"
-            + sprinter.getClosureString(nullptr) 
-            + "</td></tr>";
-        tableOut += content;
+    StatePrinter sprinter(root);
+    content = String("<tr><td>")
+        + "</td><td>"
+        + sprinter.getKernelString() + "</td><td class=\"td-state\">"
+        + std::to_string(root->getState()) + "</td><td>"
+        + sprinter.getClosureString(nullptr) 
+        + "</td></tr>";
+    lrClosureTableHTML += content;
 
-        while (!toVisit.empty()) {
-            GrammarState* state = toVisit.front();
-            toVisit.pop_front();
-            auto it = visited.find(state);
-            if (it != visited.end())
-                continue;
-            else
-                visited.insert(state);
+    while (!toVisit.empty()) {
+        GrammarState* state = toVisit.front();
+        toVisit.pop_front();
+        auto it = visited.find(state);
+        if (it != visited.end())
+            continue;
+        else
+            visited.insert(state);
 
-            for (auto vk : state->actionStateMap) {
-                toVisit.push_back(vk.second);
-                GrammarState* toState = vk.second;
-                sprinter = StatePrinter(toState);
+        for (auto vk : state->actionStateMap) {
+            toVisit.push_back(vk.second);
+            GrammarState* toState = vk.second;
+            sprinter = StatePrinter(toState);
 
-                String closureString = "";
-                String content = String("<tr><td>")
-                    + sprinter.getGotoString(state, vk.first) +"</td><td>"
-                    + sprinter.getKernelString() + "</td><td class=\"td-state\">"
-                    + std::to_string(toState->getState()) + "</td><td>"
-                    + sprinter.getClosureString(state)
-                    + "</td></tr>";
-                tableOut += content;
-            }
+            String closureString = "";
+            String content = String("<tr><td>")
+                + sprinter.getGotoString(state, vk.first) +"</td><td>"
+                + sprinter.getKernelString() + "</td><td class=\"td-state\">"
+                + std::to_string(toState->getState()) + "</td><td>"
+                + sprinter.getClosureString(state)
+                + "</td></tr>";
+            lrClosureTableHTML += content;
         }
-
-        tableOut += tableFoot;
     }
-    lrClosureTableHTML = tableOut;
+
+    lrClosureTableHTML += tableFoot;
 
     #ifdef _DEBUG
     std::cout << lrClosureTableHTML << std::endl;
@@ -118,88 +113,85 @@ std::string HTMLRenderer::getLRParsingTable(Parser* parser) const
 {
     Grammar extGrammar = parser->grammar;
 
-    String tableOut;
     String lrTableHTML;
     std::cout << "LR TABLE" << std::endl;
-    {
-        int nlits = extGrammar.literals.size(),
-            nvars = extGrammar.variables.size();
-        int nsymbs = nlits + nvars;
-        
-        String tableHead = 
-        String("<table>")
-        + "<thead>"
-        + "<tr><th colspan=\""+std::to_string(nsymbs+1)+"\">LR table</th></tr>"
-        + "<tr>"
-        + "<th rowspan=\"2\">State</th><th colspan=\""+std::to_string(nlits)+"\">ACTION</th><th colspan=\""+std::to_string(nvars)+"\">GOTO</th>"
-        + "</tr>";
-        tableHead += "<tr>";
-        for (auto l : extGrammar.literals)
-            tableHead += String("<td>") + l + "</td>";
-        for (auto v : extGrammar.variables)
-            tableHead += String("<td>") + v + "</td>";
-        tableHead += "</tr>";
-        tableHead += "</thead>";
+    
+    int nlits = extGrammar.literals.size(),
+        nvars = extGrammar.variables.size();
+    int nsymbs = nlits + nvars;
+    
+    String tableHead = 
+    String("<table>")
+    + "<thead>"
+    + "<tr><th colspan=\""+std::to_string(nsymbs+1)+"\">LR table</th></tr>"
+    + "<tr>"
+    + "<th rowspan=\"2\">State</th><th colspan=\""+std::to_string(nlits)+"\">ACTION</th><th colspan=\""+std::to_string(nvars)+"\">GOTO</th>"
+    + "</tr>";
+    tableHead += "<tr>";
+    for (auto l : extGrammar.literals)
+        tableHead += String("<td>") + l + "</td>";
+    for (auto v : extGrammar.variables)
+        tableHead += String("<td>") + v + "</td>";
+    tableHead += "</tr>";
+    tableHead += "</thead>";
 
-        tableOut = tableHead + "<tbody>";
+    lrTableHTML = tableHead + "<tbody>";
 
-        String content;
-        for (auto stateEntry : parser->stateMap) {
-            int stateIntex = stateEntry.first;
-            GrammarState* state = stateEntry.second;
+    String content;
+    for (auto stateEntry : parser->stateMap) {
+        int stateIntex = stateEntry.first;
+        GrammarState* state = stateEntry.second;
 
-            content = "<tr><td class=\"td-state\">"+std::to_string(stateEntry.first)+"</td>";
+        content = "<tr><td class=\"td-state\">"+std::to_string(stateEntry.first)+"</td>";
 
-            std::map<String, String> literalEntries;
+        std::map<String, String> literalEntries;
 
-            // Imprimir Reduces
-            std::vector<RuleProgress> completedProgressRules =  state->getCompletedRules();
-            for (auto pr : completedProgressRules) {
-                if (pr.rule.head == extGrammar.headVariable) {
-                    // Poner acc en <td>$</td>
-                    literalEntries["$"] += "acc";
-                }
-                else {
-                    int ruleIndex = pr.rule.id;
-                    auto followLiterals = extGrammar.varFollowsMap[pr.rule.head];
-                    for (auto lit : followLiterals) {
-                        // Poner R[ruleIndex] en <td>lit</td>
-                        if (literalEntries[lit] != "") literalEntries[lit] += ";";
-                        literalEntries[lit] += "R"+std::to_string(ruleIndex);
-                    }
-                }
+        // Imprimir Reduces
+        std::vector<RuleProgress> completedProgressRules =  state->getCompletedRules();
+        for (auto pr : completedProgressRules) {
+            if (pr.rule.head == extGrammar.headVariable) {
+                // Poner acc en <td>$</td>
+                literalEntries["$"] += "<span style=\"color: green\">acc</span>";
             }
-
-            // Imprimir shifts dependiendo de literales
-            for (auto lit : extGrammar.literals) {
-                auto actionLink = state->actionStateMap.find(lit);
-                if (actionLink != state->actionStateMap.end()) {
-                    GrammarState* toState = (*actionLink).second;
+            else {
+                int ruleIndex = pr.rule.id;
+                auto followLiterals = extGrammar.varFollowsMap[pr.rule.head];
+                for (auto lit : followLiterals) {
+                    // Poner R[ruleIndex] en <td>lit</td>
                     if (literalEntries[lit] != "") literalEntries[lit] += ";";
-                    literalEntries[lit] += "S"+std::to_string(toState->getState());
+                    literalEntries[lit] += String("R")+"<span style=\"color: green\">"+std::to_string(ruleIndex) + "</span>";
                 }
             }
-
-            for (auto lit : extGrammar.literals) {
-                content += "<td>" + literalEntries[lit] + "</td>";
-            }
-            // Imprimir Gotos dependiendo de acciones en variables
-            for (auto var : extGrammar.variables) {
-                auto actionLink = state->actionStateMap.find(var);
-                if (actionLink != state->actionStateMap.end()) {
-                    GrammarState* toState = (*actionLink).second;
-                    content += String("<td>") + std::to_string(toState->getState()) + "</td>";
-                }
-                else
-                    content += String("<td>") + "" + "</td>";
-            }
-            
-            tableOut += content;
         }
 
-        tableOut += "</tbody></table>";
+        // Imprimir shifts dependiendo de literales
+        for (auto lit : extGrammar.literals) {
+            auto actionLink = state->actionStateMap.find(lit);
+            if (actionLink != state->actionStateMap.end()) {
+                GrammarState* toState = (*actionLink).second;
+                if (literalEntries[lit] != "") literalEntries[lit] += ";";
+                literalEntries[lit] += String("S") + "<span style=\"color: blue\">" + std::to_string(toState->getState()) + "</span>";
+            }
+        }
+
+        for (auto lit : extGrammar.literals) {
+            content += "<td>" + literalEntries[lit] + "</td>";
+        }
+        // Imprimir Gotos dependiendo de acciones en variables
+        for (auto var : extGrammar.variables) {
+            auto actionLink = state->actionStateMap.find(var);
+            if (actionLink != state->actionStateMap.end()) {
+                GrammarState* toState = (*actionLink).second;
+                content += String("<td>") + "<span style=\"color: blue\">" + std::to_string(toState->getState()) + "</span>" + "</td>";
+            }
+            else
+                content += String("<td>") + "" + "</td>";
+        }
+        
+        lrTableHTML += content;
     }
-    lrTableHTML = tableOut;
+
+    lrTableHTML += "</tbody></table>";
 
     #ifdef _DEBUG
     std::cout << lrTableHTML << std::endl;

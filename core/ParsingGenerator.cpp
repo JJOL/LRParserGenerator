@@ -5,6 +5,32 @@
 #include <string>
 #include <iostream>
 
+// ------------------------------------------------------------------------------- //
+// Custom Implementation for comparison operators in sets and maps that doesnt quite work well
+bool myKernelSetFind(
+    const RuleProgress& pr,
+    const KernelsSet& ks
+)
+{
+    for (auto it = ks.begin(); it != ks.end(); it++) {
+        const RuleProgress& r = *it;
+        if (!(r < pr) && !(pr < r)) return true;
+    }
+    return false;
+}
+struct KernelSetCompare
+{
+    bool operator() (const KernelsSet& ks1, const KernelsSet& ks2) const
+    {
+        for (auto k : ks1) {
+            if (!myKernelSetFind(k, ks2))
+                return true;
+        }
+        return false;
+    }
+};
+// ------------------------------------------------------------------------------- //
+
 std::map<int, GrammarState*> groupIntoTable(GrammarState *root)
 {
     // Generar una tabla de estados indexada por identificador de estado
@@ -39,34 +65,10 @@ void printKernelSet(const KernelsSet& kernel)
     std::cout << "}" << std::endl;
 }
 
-bool myKernelSetFind(
-    const RuleProgress& pr,
-    const KernelsSet& ks
-)
-{
-    for (auto it = ks.begin(); it != ks.end(); it++) {
-        const RuleProgress& r = *it;
-        if (!(r < pr) && !(pr < r)) return true;
-    }
-    return false;
-}
 
-struct KernelSetCompare
-{
-    bool operator() (const KernelsSet& ks1, const KernelsSet& ks2) const
-    {
-        for (auto k : ks1) {
-            // if (ks2.find(k) == ks2.end()) {
-            if (!myKernelSetFind(k, ks2))
-                return true;
-        }
-        return false;
-    }
-};
-
-GrammarState* myKernelMapFind(
+GrammarState* findStateFromKernel(
     const std::map<KernelsSet, GrammarState*, KernelSetCompare>& map,
-    const KernelsSet& keySet, bool debug)
+    const KernelsSet& keySet)
 {
     KernelSetCompare kc;
     for (auto kv : map) {
@@ -83,12 +85,11 @@ Parser* ParsingGenerator::generate(Grammar g)
     std::list<GrammarState*> toVisit;
     std::map<KernelsSet, GrammarState*, KernelSetCompare> kernelsStateMap;
 
-    GrammarRule firstRule = g.variableRulesMap[g.variables[0]][0];
-    KernelsSet initKernel;
-    initKernel.insert(RuleProgress(firstRule));
-
     int STATE_ID = 0;
-    GrammarState* state0 = new GrammarState(STATE_ID++, initKernel, g);
+    GrammarRule& firstRule = g.variableRulesMap[g.headVariable].front();
+    KernelsSet state0Kernel;
+    state0Kernel.insert(RuleProgress(firstRule));
+    GrammarState* state0 = new GrammarState(STATE_ID++, state0Kernel, g);
 
     toVisit.push_back(state0);
 
@@ -96,8 +97,8 @@ Parser* ParsingGenerator::generate(Grammar g)
         GrammarState* state = toVisit.front();
         toVisit.pop_front();
 
-        auto it = visited.find(state);
-        if (it != visited.end()) {
+        auto indexIt = visited.find(state);
+        if (indexIt != visited.end()) {
             std::cout << "We have visited state (" << state->getState() << "). Skiping!" << std::endl;
             continue;
         } else {
@@ -105,37 +106,18 @@ Parser* ParsingGenerator::generate(Grammar g)
             visited.insert(state);
         }
 
-    //     // Process Actions
+        // Process Actions
         std::cout << "Checking actions:" << std::endl;
-        for (std::string a : state->actions) {
-            std::cout << "a: " << a << std::endl;
+        for (String a : state->actions) {
             KernelsSet newKernelRules = state->move(a);
+            #ifdef _DEBUG
+            std::cout << "a: " << a << std::endl;
             std::cout << "Generated Kernel: " << std::endl;
             printKernelSet(newKernelRules);
+            #endif
             GrammarState* nextState;
-
-            // if (state->getState() == 1 && a == "F") {
-            //     auto it = kernelsStateMap.find(newKernelRules);
-            //     if (it == kernelsStateMap.end()) {
-            //         std::cout << "We didnt find a matching kernel within:" << std::endl;
-            //         for (auto kv : kernelsStateMap) {
-            //             std::cout << "Kernel:" << std::endl;
-            //             printKernelSet(kv.first);
-            //         }
-            //     } else {
-            //         std::cout << "We found a matching kernel!" << std::endl;
-            //     } 
-            // }
-            
-            auto it = kernelsStateMap.find(newKernelRules);
-
-            auto found = myKernelMapFind(kernelsStateMap, newKernelRules, state->getState() == 1);
-
-            // if (it != kernelsStateMap.end()) {
-            if (found != nullptr) {
-                // nextState = it->second;
-                nextState = found;
-            } else {
+            nextState = findStateFromKernel(kernelsStateMap, newKernelRules);
+            if (nextState == nullptr) {
                 nextState = new GrammarState(STATE_ID++, newKernelRules, state, a, g);
                 std::cout << "Adding KernelSet to Map..." << std::endl;
                 kernelsStateMap.insert({newKernelRules,  nextState});
@@ -145,8 +127,6 @@ Parser* ParsingGenerator::generate(Grammar g)
             state->actionStateMap[a] = nextState;
         }
     }
-
-
 
     Parser* parser = new Parser(g, groupIntoTable(state0));
     parser->root = state0;
